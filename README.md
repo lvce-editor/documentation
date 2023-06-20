@@ -15,9 +15,10 @@
 
 ## Installation (Linux, Deb)
 
-1. Go to `https://github.com/lvce-editor/lvce-editor/releases`
-2. Download the the `lvce-v0.15.27_amd64.deb` file
-3. Run `sudo dpkg -i ./lvce-v0.15.27_amd64.deb` to install
+```sh
+curl https://github.com/lvce-editor/lvce-editor/releases/download/v0.15.31/lvce-v0.15.31_amd64.deb >  /tmp/lvce.deb &&
+sudo apt install -y /tmp/lvce.deb
+```
 
 ## Installation (Linux, AppImage)
 
