@@ -55,7 +55,6 @@ jobs:
           retention-days: 7
 
   browsers:
-    needs: quality
     strategy:
       fail-fast: false
       matrix:
@@ -81,11 +80,10 @@ jobs:
           key: ${{ runner.os }}-${{ runner.arch }}-node-modules-${{ steps.node-modules-cache-key.outputs.value }}
       - run: npm ci
         if: steps.node-modules-cache.outputs.cache-hit != 'true'
-      - uses: actions/download-artifact@v8
-        with:
-          name: site
-          path: .tmp/site
-      - run: npx playwright install --with-deps ${{ matrix.browser }}
+      - run: npx playwright install --with-deps chromium
+      - if: matrix.browser != 'chromium'
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+      - run: npm run build
       - run: npm run test:e2e -- --project=${{ matrix.browser }}
       - uses: actions/upload-artifact@v7
         if: failure()
