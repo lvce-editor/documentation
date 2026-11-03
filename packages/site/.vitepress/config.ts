@@ -60,6 +60,6 @@ export default defineConfig({
     outline: { level: [2, 3], label: 'On this page' },
     editLink: { pattern: 'https://github.com/lvce-editor/documentation/edit/main/packages/site/:path' },
     socialLinks: [{ icon: 'github', link: 'https://github.com/lvce-editor/documentation' }],
-    footer: { message: 'LVCE Editor documentation', copyright: 'LVCE Editor · MIT' },
+    footer: { copyright: 'LVCE Editor' },
   },
 })

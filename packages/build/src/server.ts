@@ -6,6 +6,7 @@ const contentTypes: Record<string, string> = {
   '.css': 'text/css',
   '.html': 'text/html; charset=utf-8',
   '.js': 'text/javascript',
+  '.mjs': 'text/javascript',
   '.json': 'application/json',
   '.svg': 'image/svg+xml',
   '.wasm': 'application/wasm',

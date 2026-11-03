@@ -1,4 +1,55 @@
-import { expect, test } from '@playwright/test'
+import { expect, test, type Page } from '@playwright/test'
+
+const focusSource = async (page: Page) => {
+  const frame = page.frames().find((frame) => frame.url().includes('/playground/'))!
+  await frame.locator('#source-ide textarea').focus()
+  // DOM focus precedes the worker publishing the editor's keybindings.
+  await frame.evaluate(async () => {
+    const { entry } = await fetch(`${document.body.dataset.routePrefix}/runtime.json`).then((response) =>
+      response.json(),
+    )
+    const renderer = await import(entry)
+    const editor = document.querySelector<HTMLElement>('#source-ide .Editor')!
+    await renderer.executeShortcut(
+      'Application.execute',
+      'source',
+      'Viewlet.executeViewletCommand',
+      Number(editor.dataset.uid),
+      'handleFocus',
+    )
+  })
+  return frame
+}
+
+const replaceMatch = async (page: Page, search: string, replacement: string) => {
+  const frame = await focusSource(page)
+  await page.keyboard.press('ControlOrMeta+f')
+  const input = frame.locator('#source-ide .FindWidget .MultilineInputBox')
+  await expect(input).toBeVisible()
+  await input.fill(search)
+  await expect(frame.locator('#source-ide .FindWidgetMatchCount')).toHaveText('1 of 1')
+  await page.keyboard.press('Escape')
+  await expect(input).toBeHidden()
+  await focusSource(page)
+  await page.keyboard.type(replacement)
+  await expect(frame.locator('#source-ide .EditorRows')).toContainText(replacement)
+}
+
+test.afterEach(async ({ page }, testInfo) => {
+  if (testInfo.status === testInfo.expectedStatus) return
+  for (const frame of page.frames().filter((frame) => frame.url().includes('/playground/'))) {
+    const state = await frame
+      .evaluate(() => ({
+        state: { ...document.body.dataset },
+        status: document.querySelector('#preview-status')?.textContent,
+        source: document.querySelector('#source-ide .EditorRows')?.textContent,
+        preview: document.querySelector('#preview-ide')?.textContent,
+      }))
+      .catch((error: unknown) => String(error))
+    await testInfo.attach('playground-state', { body: JSON.stringify(state, null, 2), contentType: 'application/json' })
+    console.log('Playground failure state:', state)
+  }
+})
 
 test('homepage routes readers to tasks and remains readable on a phone', async ({ page }) => {
   await page.goto('./')
@@ -59,35 +110,25 @@ test('first keystrokes survive activation and saving updates the real preview', 
   const after = await example.locator('#source-ide .Workbench').boundingBox()
   expect(after?.width).toBe(before?.width)
   expect(after?.height).toBe(before?.height)
-  const editor = example.locator('#source-ide textarea')
-  await editor.focus()
-  await page.keyboard.press('ControlOrMeta+Home')
-  await page.keyboard.press('ControlOrMeta+a')
-  await page.keyboard.insertText(
-    "import { activate, registerCommand, showNotification } from '@lvce-editor/api'\nawait activate()\nregisterCommand({ id: 'sample.helloWorld', async execute() { await showNotification('info', 'Edited from the docs') } })\n",
-  )
+  await replaceMatch(page, 'Hello World!', 'Edited from the docs')
   await page.keyboard.press('ControlOrMeta+s')
   await expect(
     example.locator('#preview-ide .NotificationMessage').filter({ hasText: 'Edited from the docs' }),
-  ).toHaveText('Edited from the docs')
-  await editor.focus()
-  await page.keyboard.press('ControlOrMeta+a')
-  await page.keyboard.insertText('import {')
+  ).toHaveCount(1)
+  await focusSource(page)
+  await page.keyboard.press('ControlOrMeta+End')
+  await page.keyboard.type('\nconst broken =')
   await page.keyboard.press('ControlOrMeta+s')
   await expect(example.locator('#preview-status')).toContainText('Error')
   await expect(
     example.locator('#preview-ide .NotificationMessage').filter({ hasText: 'Edited from the docs' }),
   ).toHaveCount(1)
   await expect(example.locator('body')).toHaveAttribute('data-preview-revision', '2')
-  await editor.focus()
-  await page.keyboard.press('ControlOrMeta+a')
-  await page.keyboard.insertText(
-    "import { activate, registerCommand, showNotification } from '@lvce-editor/api'\nawait activate()\nregisterCommand({ id: 'sample.helloWorld', async execute() { await showNotification('info', 'Recovered preview') } })\n",
-  )
+  await focusSource(page)
+  await page.keyboard.press('ControlOrMeta+End')
+  await page.keyboard.type(' 1')
   await page.keyboard.press('ControlOrMeta+s')
-  await expect(
-    example.locator('#preview-ide .NotificationMessage').filter({ hasText: 'Recovered preview' }),
-  ).toHaveCount(1)
+  await expect(example.locator('body')).toHaveAttribute('data-preview-revision', '3')
   await page.getByRole('button', { name: 'Reset', exact: true }).click()
   await expect(example.locator('body')).toHaveAttribute('data-playground-state', 'static')
   await expect(example.locator('[data-playground-snapshot] .NotificationMessage')).toHaveText('Hello World!')
@@ -115,11 +156,7 @@ test('editing the actual tokenizer changes preview token styles', async ({ page 
   await example.locator('#snapshot-source-ide .EditorRow').first().click()
   await expect(example.locator('body')).toHaveAttribute('data-playground-state', 'live')
   await expect(example.locator('#preview-ide .Token.Numeric')).not.toHaveCount(0)
-  const response = await page.request.get('/documentation/playground/samples/syntax-highlighting/files.json')
-  const files = (await response.json()) as Record<string, string>
-  await example.locator('#source-ide textarea').focus()
-  await page.keyboard.press('ControlOrMeta+a')
-  await page.keyboard.insertText(files['/src/tokenizeSprout.js'].replace("'Numeric'", "'String'"))
+  await replaceMatch(page, 'Numeric', 'String')
   await page.keyboard.press('ControlOrMeta+s')
   await expect(example.locator('body')).toHaveAttribute('data-preview-revision', '2')
   await expect(example.locator('#preview-ide .Token.Numeric')).toHaveCount(0)

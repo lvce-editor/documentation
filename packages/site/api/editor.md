@@ -10,7 +10,7 @@ Editor state and workspace state are separate. An extension may be active when n
 
 Use `getActiveEditor()` when an action needs an editor's identity and URI. Handle the absence of an active editor. Use `getEditorSelections()` and `setEditorSelections()` to work with selections rather than inferring them from visible DOM.
 
-Selection offsets and provider offsets refer to document text. Check the generated `EditorSelection` declaration for the exact shape; do not substitute line/column objects from another editor's API.
+Editor selections use zero-based row and column indices, as shown in `EditorSelection`. Language providers that accept offsets use document-text offsets. Check each API's type before converting between these forms.
 
 ## Work with URIs
 

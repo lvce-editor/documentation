@@ -20,7 +20,12 @@ export const generateApi = async (checkout: string) => {
     const symbol = exported.flags & ts.SymbolFlags.Alias ? checker.getAliasedSymbol(exported) : exported
     const declaration = symbol.getDeclarations()?.[0]
     if (!declaration) throw new Error(`Cannot resolve exported API ${exported.name}`)
-    if (!ts.isSourceFile(declaration)) declarations.set(exported.name, declaration.getText())
+    if (!ts.isSourceFile(declaration)) {
+      const text = ts.isVariableDeclaration(declaration)
+        ? `export declare const ${declaration.getText()};`
+        : declaration.getText()
+      declarations.set(exported.name, text)
+    }
   }
   const output = resolve(site, '.generated/api')
   await mkdir(output, { recursive: true })
