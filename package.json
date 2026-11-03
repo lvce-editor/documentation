@@ -1,0 +1,37 @@
+{
+  "name": "@lvce-editor/documentation-monorepo",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=26.12.1"
+  },
+  "scripts": {
+    "dev": "node packages/build/src/dev.ts",
+    "build": "node packages/build/src/build.ts",
+    "build:static": "npm run build",
+    "preview": "node packages/build/src/preview.ts",
+    "test": "node --test packages/build/test/*.test.ts",
+    "test:e2e": "playwright test --config packages/e2e/playwright.config.ts",
+    "type-check": "vue-tsc --noEmit -p tsconfig.json",
+    "lint": "prettier --check .",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "@fontsource-variable/public-sans": "5.2.7",
+    "@playwright/test": "1.64.1",
+    "@types/node": "26.4.1",
+    "prettier": "3.9.10",
+    "typescript": "6.0.3",
+    "vitepress": "1.6.4",
+    "vue": "3.5.22",
+    "vue-tsc": "3.1.1"
+  },
+  "prettier": {
+    "semi": false,
+    "singleQuote": true,
+    "printWidth": 120
+  }
+}
