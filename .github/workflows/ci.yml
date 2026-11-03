@@ -43,7 +43,6 @@ jobs:
           retention-days: 7
 
   browsers:
-    needs: quality
     strategy:
       fail-fast: false
       matrix:
@@ -57,11 +56,8 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      - uses: actions/download-artifact@v8
-        with:
-          name: site
-          path: .tmp/site
-      - run: npx playwright install --with-deps ${{ matrix.browser }}
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium ${{ matrix.browser }}
       - run: npm run test:e2e -- --project=${{ matrix.browser }}
       - uses: actions/upload-artifact@v7
         if: failure()
