@@ -176,3 +176,64 @@ test('phone tabs show source and preview; local search finds a tutorial', async 
   await page.getByRole('searchbox').fill('language server')
   await expect(page.getByRole('option').filter({ hasText: 'Connect a language server' }).first()).toBeVisible()
 })
+
+for (const theme of ['light', 'dark']) {
+  test(`${theme} website palette reaches static and live IDEs without resetting edits`, async ({ page }) => {
+    await page.addInitScript((theme) => localStorage.setItem('vitepress-theme-appearance', theme), theme)
+    let workers = 0
+    page.on('worker', () => workers++)
+    await page.goto('./extensions/hello-world')
+    const example = page.frameLocator('iframe')
+    await expect(example.locator('html')).toHaveClass(theme)
+    const assertPalette = async () => {
+      const background = await page
+        .locator('.live-example')
+        .evaluate((element) => getComputedStyle(element).backgroundColor)
+      const accent = await page.locator('.example-caption a').evaluate((element) => getComputedStyle(element).color)
+      await expect(example.locator('.Editor').first()).toHaveCSS('background-color', background)
+      await expect(example.locator('.MainTabSelected').first()).toHaveCSS('background-color', background)
+      await expect(example.locator('.Token.Keyword').first()).toHaveCSS('color', accent)
+      const toolbar = await page
+        .locator('.example-toolbar')
+        .evaluate((element) => getComputedStyle(element).backgroundColor)
+      await expect(example.locator('.Notification').first()).toHaveCSS('background-color', toolbar)
+    }
+    await assertPalette()
+    const opposite = theme === 'light' ? 'dark' : 'light'
+    await page.getByRole('switch').click()
+    await expect(example.locator('html')).toHaveClass(opposite)
+    await assertPalette()
+    await expect(example.locator('body')).toHaveAttribute('data-playground-state', 'static')
+    expect(workers).toBe(0)
+    await example.locator('#snapshot-source-ide textarea').focus()
+    await expect(example.locator('body')).toHaveAttribute('data-playground-state', 'live')
+    await focusSource(page)
+    await page.keyboard.type('// keep this edit\n')
+    await expect(example.locator('#source-ide .EditorRow').first()).toHaveText('// keep this edit')
+    await assertPalette()
+    await page.getByRole('switch').click()
+    await expect(example.locator('html')).toHaveClass(theme)
+    await assertPalette()
+    await expect(example.locator('#source-ide .EditorRow').first()).toHaveText('// keep this edit')
+    await expect(example.locator('body')).toHaveAttribute('data-playground-state', 'live')
+    await expect(example.locator('body')).toHaveAttribute('data-preview-revision', '1')
+    await page.getByRole('button', { name: 'Reset', exact: true }).click()
+    await expect(example.locator('html')).toHaveClass(theme)
+    await expect(example.locator('body')).toHaveAttribute('data-playground-state', 'static')
+    await assertPalette()
+  })
+}
+
+test('standalone playground follows the system theme without starting workers', async ({ page }) => {
+  let workers = 0
+  page.on('worker', () => workers++)
+  await page.emulateMedia({ colorScheme: 'dark' })
+  await page.goto('./playground/hello-world/')
+  await expect(page.locator('html')).toHaveClass('dark')
+  await expect(page.locator('.Editor').first()).toHaveCSS('background-color', 'rgb(17, 30, 38)')
+  await page.emulateMedia({ colorScheme: 'light' })
+  await expect(page.locator('html')).toHaveClass('light')
+  await expect(page.locator('.Editor').first()).toHaveCSS('background-color', 'rgb(250, 252, 253)')
+  await expect(page.locator('body')).toHaveAttribute('data-playground-state', 'static')
+  expect(workers).toBe(0)
+})
