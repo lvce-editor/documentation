@@ -1,0 +1,8 @@
+{
+  "editor": "0.127.6",
+  "samples": {
+    "repository": "https://github.com/lvce-editor/extension-samples.git",
+    "revision": "d0d3352a533bc3bc9597b1bb17c5b468b5da4179",
+    "ids": ["hello-world", "syntax-highlighting"]
+  }
+}
