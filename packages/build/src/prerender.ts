@@ -1,7 +1,7 @@
 import { chromium } from '@playwright/test'
-import { readFile, writeFile } from 'node:fs/promises'
+import { copyFile, readFile, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
-import { playgroundBase } from './paths.ts'
+import { playgroundBase, site } from './paths.ts'
 import { serve } from './server.ts'
 
 const embeddedCss = `
@@ -19,6 +19,9 @@ html, body { width:100%; height:100%; }
 `
 
 export const prerender = async (directory: string, ids: string[]) => {
+  for (const name of ['palette.css', 'playground.css', 'playground-theme.js']) {
+    await copyFile(resolve(site, '.vitepress/theme', name), resolve(directory, 'assets', name))
+  }
   const server = await serve(directory, playgroundBase)
   const browser = await chromium.launch()
   try {
@@ -28,7 +31,10 @@ export const prerender = async (directory: string, ids: string[]) => {
       const sourceEntry = id === 'syntax-highlighting' ? 'src/tokenizeSprout.js' : 'src/main.ts'
       const prepared = html
         .replace('<body ', `<body data-embedded="true" data-source-entry="${sourceEntry}" `)
-        .replace('</head>', `<style>${embeddedCss}</style></head>`)
+        .replace(
+          '</head>',
+          `<script src="../assets/playground-theme.js"></script><link rel="stylesheet" href="../assets/palette.css"><link rel="stylesheet" href="../assets/playground.css"><style>${embeddedCss}</style></head>`,
+        )
       await writeFile(file, prepared)
       const page = await browser.newPage({ viewport: { width: 1080, height: 440 } })
       try {

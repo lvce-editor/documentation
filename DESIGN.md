@@ -13,3 +13,5 @@ Playgrounds have a compact frame with a filename and source/preview labels, a vi
 Focus rings, text selection, hover states, errors, and dark mode use the same palette. Avoid decorative page-load motion; use short transitions only to explain a state change. Respect reduced motion.
 
 Use the existing LVCE mark from `lvce-editor/static/icons/icon.svg` beside the documentation wordmark.
+
+The website and embedded IDEs share `palette.css`. Map LVCE UI and syntax roles in `playground.css`; keep the same palette for prerendered and live DOM. Embedded IDEs follow the website toggle without reloading or starting workers. Standalone playgrounds follow the saved website preference, then the system preference.

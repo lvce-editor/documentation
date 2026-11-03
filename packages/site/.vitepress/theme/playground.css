@@ -1,0 +1,157 @@
+:root {
+  color-scheme: light;
+}
+:root.dark {
+  color-scheme: dark;
+}
+/* Keep these on body: runtime theme styles on :root must not replace them. */
+html body {
+  --WorkbenchBackground: var(--vp-c-bg);
+  --WorkbenchForeground: var(--vp-c-text-1);
+  --MainBackground: var(--vp-c-bg);
+  --EditorBackground: var(--vp-c-bg);
+  --EditorForeground: var(--vp-c-text-1);
+  --EditorCursorBackground: var(--vp-c-brand-1);
+  --EditorSelectionBackground: var(--docs-selection);
+  --EditorInactiveSelectionBackground: var(--vp-c-bg-soft);
+  --EditorLineNumberForeground: var(--vp-c-text-3);
+  --EditorLineNumberActiveForeground: var(--vp-c-text-1);
+  --EditorScrollBarBackground: var(--vp-c-divider);
+  --EditorWidgetBorder: var(--vp-c-divider);
+  --EditorErrorForeground: var(--docs-error);
+  --EditorWarningForeground: var(--docs-warning);
+  --EditorRowHighlightedBackground: var(--vp-c-bg-soft);
+  --ActivityBarBackground: var(--vp-c-bg-alt);
+  --SideBarBackground: var(--vp-c-bg-alt);
+  --SideBarForeground: var(--vp-c-text-2);
+  --TabsBackground: var(--vp-c-bg-alt);
+  --TabBackground: var(--vp-c-bg-alt);
+  --TabActiveBackground: var(--vp-c-bg);
+  --TabForeground: var(--vp-c-text-2);
+  --TabActiveForeground: var(--vp-c-text-1);
+  --TabBorder: var(--vp-c-divider);
+  --StatusBarBackground: var(--vp-c-bg-alt);
+  --StatusBarForeground: var(--vp-c-text-2);
+  --StatusBarBorderTopColor: var(--vp-c-divider);
+  --PanelBackground: var(--vp-c-bg-alt);
+  --PanelBorderTopColor: var(--vp-c-divider);
+  --WidgetBackground: var(--vp-c-bg-alt);
+  --WidgetForeground: var(--vp-c-text-1);
+  --HoverWidgetBackground: var(--vp-c-bg-alt);
+  --QuickPickBackground: var(--vp-c-bg-alt);
+  --MenuBackground: var(--vp-c-bg-alt);
+  --MenuForeground: var(--vp-c-text-1);
+  --MenuItemHoverBackground: var(--docs-selection);
+  --MenuItemHoverForeground: var(--vp-c-text-1);
+  --MenuItemSeparatorBackground: var(--vp-c-divider);
+  --ListForeground: var(--vp-c-text-1);
+  --ListHoverBackground: var(--vp-c-bg-soft);
+  --ListHoverForeground: var(--vp-c-text-1);
+  --ListActiveSelectionBackground: var(--docs-selection);
+  --ListActiveSelectionForeground: var(--vp-c-text-1);
+  --ListInactiveSelectionBackground: var(--vp-c-bg-soft);
+  --InputBoxBackground: var(--vp-c-bg);
+  --InputBoxForeground: var(--vp-c-text-1);
+  --InputBoxBorder: var(--vp-c-divider);
+  --InputBoxPlaceholderForeground: var(--vp-c-text-2);
+  --CompletionListBackground: var(--vp-c-bg-alt);
+  --CompletionListForeground: var(--vp-c-text-1);
+  --CompletionListBorder: var(--vp-c-divider);
+  --CompletionListItemActiveBackground: var(--docs-selection);
+  --CompletionListItemActiveForeground: var(--vp-c-text-1);
+  --FocusBorder: var(--vp-c-brand-1);
+  --FocusOutline: var(--vp-c-brand-1);
+  --LinkForeground: var(--vp-c-brand-1);
+  --vscode-scrollbarSlider-background: var(--vp-c-divider);
+  --vscode-scrollbarSlider-hoverBackground: var(--vp-c-text-3);
+  background: var(--vp-c-bg);
+  color: var(--vp-c-text-1);
+}
+html .Editor,
+html .Token {
+  color: var(--vp-c-text-1);
+}
+html .IdePane {
+  border-color: var(--vp-c-divider);
+}
+html .PreviewDivider {
+  background: var(--vp-c-divider);
+}
+html .PreviewDivider:hover,
+html .PreviewDivider:focus-visible {
+  background: var(--vp-c-brand-1);
+}
+html .Notification {
+  background: var(--vp-c-bg-alt);
+  color: var(--vp-c-text-1);
+  border: 1px solid var(--vp-c-divider);
+  box-shadow: none;
+}
+html .NotificationOption {
+  color: var(--vp-c-text-1);
+  background: var(--docs-selection);
+}
+html .IconButton {
+  color: var(--vp-c-text-2);
+}
+html .IconButton:enabled:hover {
+  background: var(--docs-selection);
+}
+html .IconButton:focus-visible {
+  outline-color: var(--vp-c-brand-1);
+}
+html .Token:is(.Comment, .Punctuation, .PunctuationString, .PunctuationTag) {
+  color: var(--vp-c-text-2);
+}
+html
+  .Token:is(
+    .Keyword,
+    .KeywordImport,
+    .KeywordControl,
+    .KeywordModifier,
+    .KeywordAsync,
+    .KeywordAwait,
+    .KeywordReturn,
+    .KeywordNew,
+    .KeywordVoid,
+    .KeywordDeclare,
+    .KeywordFunction,
+    .KeywordThis,
+    .Import,
+    .Include,
+    .StorageModifier,
+    .Type,
+    .TypePrimitive,
+    .Class
+  ) {
+  color: var(--vp-c-brand-1);
+}
+html .Token:is(.String, .MarkdownString, .Regex, .CssPropertyValue, .YamlPropertyValueString) {
+  color: var(--docs-syntax-string);
+}
+html
+  .Token:is(
+    .Function,
+    .PropertyName,
+    .JsonPropertyName,
+    .YamlPropertyName,
+    .CssPropertyName,
+    .CssSelector,
+    .CssSelectorClass,
+    .CssSelectorId,
+    .CssPseudoSelector,
+    .CssAttributeName,
+    .MarkdownLinkUrl
+  ) {
+  color: var(--docs-syntax-function);
+}
+html .Token:is(.Numeric, .LanguageConstant, .Macro, .Heading, .MarkdownLinkName) {
+  color: var(--docs-syntax-number);
+}
+html .Token:is(.Error, .CssImportant) {
+  color: var(--docs-error);
+}
+html ::selection {
+  background: var(--docs-selection);
+  color: var(--vp-c-text-1);
+}
