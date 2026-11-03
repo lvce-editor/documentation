@@ -28,7 +28,19 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
+      - name: Compute node modules cache key
+        id: node-modules-cache-key
+        run: echo "value=$(node packages/build/src/computeNodeModulesCacheKey.ts)" >> "$GITHUB_OUTPUT"
+        shell: bash
+      - uses: actions/cache@v6
+        id: node-modules-cache
+        with:
+          path: |
+            node_modules
+            packages/*/node_modules
+          key: ${{ runner.os }}-${{ runner.arch }}-node-modules-${{ steps.node-modules-cache-key.outputs.value }}
       - run: npm ci
+        if: steps.node-modules-cache.outputs.cache-hit != 'true'
       - run: npx playwright install --with-deps chromium
       - run: npm run lint
       - run: npm run type-check
@@ -55,7 +67,19 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
+      - name: Compute node modules cache key
+        id: node-modules-cache-key
+        run: echo "value=$(node packages/build/src/computeNodeModulesCacheKey.ts)" >> "$GITHUB_OUTPUT"
+        shell: bash
+      - uses: actions/cache@v6
+        id: node-modules-cache
+        with:
+          path: |
+            node_modules
+            packages/*/node_modules
+          key: ${{ runner.os }}-${{ runner.arch }}-node-modules-${{ steps.node-modules-cache-key.outputs.value }}
       - run: npm ci
+        if: steps.node-modules-cache.outputs.cache-hit != 'true'
       - run: npx playwright install --with-deps chromium
       - if: matrix.browser != 'chromium'
         run: npx playwright install --with-deps ${{ matrix.browser }}
