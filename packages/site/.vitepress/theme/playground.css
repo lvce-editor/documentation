@@ -14,7 +14,7 @@ html body {
   --EditorCursorBackground: var(--vp-c-brand-1);
   --EditorSelectionBackground: var(--docs-selection);
   --EditorInactiveSelectionBackground: var(--vp-c-bg-soft);
-  --EditorLineNumberForeground: var(--vp-c-text-3);
+  --EditorLineNumberForeground: var(--vp-c-text-2);
   --EditorLineNumberActiveForeground: var(--vp-c-text-1);
   --EditorScrollBarBackground: var(--vp-c-divider);
   --EditorWidgetBorder: var(--vp-c-divider);
@@ -86,6 +86,11 @@ html .Notification {
   color: var(--vp-c-text-1);
   border: 1px solid var(--vp-c-divider);
   box-shadow: none;
+}
+html .ActivationError {
+  color: var(--docs-error);
+  background: var(--vp-c-bg-alt);
+  border: 1px solid var(--docs-error);
 }
 html .NotificationOption {
   color: var(--vp-c-text-1);
