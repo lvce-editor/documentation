@@ -1,16 +1,27 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { withBase } from 'vitepress'
+import { ref, watch } from 'vue'
+import { useData, withBase } from 'vitepress'
 
 const props = defineProps<{ sample: string; title: string }>()
 const panel = ref<HTMLElement>()
 const frame = ref<HTMLIFrameElement>()
 const pane = ref('source')
+const { isDark } = useData()
 const resetMessage = ref('')
 
 const selectPane = (value: string) => {
   pane.value = value
   if (frame.value?.contentDocument) frame.value.contentDocument.documentElement.dataset.pane = value
+}
+const syncTheme = () => {
+  const html = frame.value?.contentDocument?.documentElement
+  html?.classList.toggle('dark', isDark.value)
+  html?.classList.toggle('light', !isDark.value)
+}
+watch(isDark, syncTheme)
+const frameLoaded = () => {
+  selectPane(pane.value)
+  syncTheme()
 }
 const reset = () => {
   try {
@@ -53,7 +64,7 @@ const expand = async () => {
       :src="withBase(`/playground/${sample}/`)"
       :title="`${title}: editable source and running preview`"
       loading="eager"
-      @load="selectPane(pane)"
+      @load="frameLoaded"
     />
     <div class="example-caption">
       <span>Edit the source, then save with <kbd>Ctrl</kbd> / <kbd>⌘</kbd> + <kbd>S</kbd>.</span
