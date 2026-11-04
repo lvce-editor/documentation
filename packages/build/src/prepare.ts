@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process'
-import { cp, mkdir, readFile, rm, writeFile } from 'node:fs/promises'
+import { cp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises'
 import { resolve, sep } from 'node:path'
 import { existsSync } from 'node:fs'
 import { createHash } from 'node:crypto'
@@ -7,6 +7,29 @@ import { root, site, playgroundBase } from './paths.ts'
 import { run } from './run.ts'
 import { prerender } from './prerender.ts'
 import { generateApi } from './api.ts'
+
+const addRobotsNoindex = async (directory: string): Promise<void> => {
+  for (const entry of await readdir(directory, { withFileTypes: true })) {
+    const path = resolve(directory, entry.name)
+    if (entry.isDirectory()) {
+      await addRobotsNoindex(path)
+    } else if (entry.isFile() && entry.name.endsWith('.html')) {
+      const html = await readFile(path, 'utf8')
+      const robots = html.match(/<meta\s+name=["']robots["'][^>]*>/i)?.[0]
+      if (robots) {
+        if (!/content=["'][^"']*\bnoindex\b[^"']*["']/i.test(robots)) {
+          throw new Error(`Conflicting robots directive in ${path}`)
+        }
+        continue
+      }
+      if (/<\/head>/i.test(html)) {
+        await writeFile(path, html.replace(/<\/head>/i, '<meta name="robots" content="noindex"></head>'))
+      } else {
+        await writeFile(path, `<meta name="robots" content="noindex">${html}`)
+      }
+    }
+  }
+}
 
 export const prepare = async () => {
   const sources = JSON.parse(await readFile(resolve(root, 'sources.json'), 'utf8')) as {
@@ -47,6 +70,7 @@ export const prepare = async () => {
   const destination = resolve(site, 'public/playground')
   await rm(destination, { recursive: true, force: true })
   await cp(resolve(checkout, '.tmp/static'), destination, { recursive: true })
+  await addRobotsNoindex(destination)
   for (const id of [...sources.samples.ids, 'language-server']) {
     const sample = resolve(checkout, `packages/sample-${id}`)
     const target = resolve(site, `.generated/samples/${id}`)

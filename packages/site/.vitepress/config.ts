@@ -14,6 +14,8 @@ const usePages = [
 const buildPages = [
   ['Start building', '/extensions/'],
   ['Hello World', '/extensions/hello-world'],
+  ['Custom views', '/extensions/custom-view'],
+  ['Build a sidebar counter', '/extensions/sidebar-counter'],
   ['Syntax highlighting', '/extensions/syntax-highlighting'],
   ['Connect a language server', '/extensions/language-server'],
   ['Manifest and activation', '/extensions/manifest'],
@@ -40,7 +42,10 @@ export default defineConfig({
   cleanUrls: true,
   lastUpdated: true,
   srcExclude: ['.generated/**', 'public/**'],
-  head: [['link', { rel: 'icon', href: '/documentation/logo.svg', type: 'image/svg+xml' }]],
+  head: [
+    ['link', { rel: 'icon', href: '/documentation/logo.svg', type: 'image/svg+xml' }],
+    ['meta', { name: 'robots', content: 'noindex' }],
+  ],
   sitemap: { hostname: 'https://lvce-editor.github.io/documentation/' },
   themeConfig: {
     logo: '/logo.svg',
@@ -49,6 +54,7 @@ export default defineConfig({
       { text: 'Use LVCE', link: '/use/', activeMatch: '/use/' },
       { text: 'Build extensions', link: '/extensions/', activeMatch: '/extensions/' },
       { text: 'API', link: '/api/', activeMatch: '/api/' },
+      { text: 'Blog', link: 'https://lvce-editor.github.io/blog/' },
       { text: `v${sources.editor}`, link: '/about/versions' },
     ],
     sidebar: [
@@ -56,8 +62,9 @@ export default defineConfig({
       { text: 'Build extensions', items: items(buildPages) },
       { text: 'API reference', collapsed: true, items: items(apiPages) },
     ],
+    aside: false,
     search: { provider: 'local' },
-    outline: { level: [2, 3], label: 'On this page' },
+    outline: false,
     editLink: { pattern: 'https://github.com/lvce-editor/documentation/edit/main/packages/site/:path' },
     socialLinks: [{ icon: 'github', link: 'https://github.com/lvce-editor/documentation' }],
     footer: { copyright: 'LVCE Editor' },
