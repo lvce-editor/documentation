@@ -262,6 +262,46 @@ test('first keystrokes survive activation and saving updates the real preview', 
   await expect(example.locator('[data-playground-snapshot] .NotificationMessage')).toHaveText('Hello World!')
 })
 
+test('switching playground tabs preserves page scroll during and after activation', async ({ page }) => {
+  await page.goto('./extensions/hello-world')
+  const example = page.frameLocator('iframe')
+  const extensionTab = example.getByRole('tab', { name: 'extension.json Close' })
+  const mainTab = example.getByRole('tab', { name: 'main.ts Close' })
+  const iframeBox = await page.locator('iframe').boundingBox()
+  expect(iframeBox).not.toBeNull()
+  const tabTop = await extensionTab.evaluate((tab) => tab.getBoundingClientRect().top)
+  await page.evaluate((top) => window.scrollTo(0, Math.max(50, top - 50)), iframeBox!.y + tabTop)
+  const scrollPosition = await page.evaluate(() => window.scrollY)
+  const dispatchTabMouseDown = async (tab: typeof extensionTab) => {
+    const defaultPrevented = await tab.evaluate((element) => {
+      const { x, y, width, height } = element.getBoundingClientRect()
+      const init = {
+        bubbles: true,
+        button: 0,
+        buttons: 1,
+        cancelable: true,
+        clientX: x + width / 2,
+        clientY: y + height / 2,
+      }
+      const event = new MouseEvent('mousedown', init)
+      element.dispatchEvent(event)
+      return event.defaultPrevented
+    })
+    return defaultPrevented
+  }
+  expect(await dispatchTabMouseDown(extensionTab)).toBe(true)
+  await expect(example.locator('body')).toHaveAttribute('data-playground-state', 'live')
+  await expect(extensionTab).toHaveAttribute('aria-selected', 'true')
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(scrollPosition)
+
+  await dispatchTabMouseDown(mainTab)
+  await expect(mainTab).toHaveAttribute('aria-selected', 'true')
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(scrollPosition)
+  await dispatchTabMouseDown(extensionTab)
+  await expect(extensionTab).toHaveAttribute('aria-selected', 'true')
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(scrollPosition)
+})
+
 test('first pointer action is replayed, and activating one iframe leaves another idle', async ({ page }) => {
   await page.goto('./extensions/hello-world')
   // A second embedding tests application ownership without a test-only production route.
