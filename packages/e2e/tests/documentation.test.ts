@@ -150,6 +150,22 @@ test('first pointer action is replayed, and activating one iframe leaves another
   await expect(page.frameLocator('#second-example').locator('body')).toHaveAttribute('data-playground-state', 'static')
 })
 
+test('the first click on the manifest tab activates and selects its live editor', async ({ page }) => {
+  await page.goto('./extensions/hello-world')
+  const example = page.frameLocator('iframe')
+  await expect(example.locator('body')).toHaveAttribute('data-playground-state', 'static')
+  const manifest = example.locator('[data-playground-snapshot] [data-application="source"] [role="tab"]', {
+    hasText: 'extension.json',
+  })
+  await expect(manifest).toBeVisible()
+  await manifest.click()
+  await expect(example.locator('body')).toHaveAttribute('data-playground-state', 'live')
+  await expect(example.locator('#source-ide [role="tab"]').filter({ hasText: 'extension.json' })).toBeVisible()
+  await expect(example.locator('#source-ide .EditorRows')).toContainText('"name"')
+  await example.locator('#source-ide [role="tab"]').filter({ hasText: 'main.ts' }).click()
+  await expect(example.locator('#source-ide .EditorRows')).toContainText('Hello World!')
+})
+
 test('editing the actual tokenizer changes preview token styles', async ({ page }) => {
   await page.goto('./extensions/syntax-highlighting')
   const example = page.frameLocator('iframe')
