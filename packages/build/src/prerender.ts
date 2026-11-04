@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import { chromium } from '@playwright/test'
 import { copyFile, readFile, writeFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
@@ -19,7 +20,7 @@ html, body { width:100%; height:100%; }
 `
 
 export const prerender = async (directory: string, ids: string[]) => {
-  for (const name of ['palette.css', 'playground.css', 'playground-theme.js']) {
+  for (const name of ['palette.css', 'playground.css', 'playground-theme.js', 'playground-preload.js']) {
     await copyFile(resolve(site, '.vitepress/theme', name), resolve(directory, 'assets', name))
   }
   const server = await serve(directory, playgroundBase)
@@ -37,6 +38,19 @@ export const prerender = async (directory: string, ids: string[]) => {
         )
       await writeFile(file, prepared)
       const page = await browser.newPage({ viewport: { width: 1080, height: 440 } })
+      // Compilation is lazy on first save, so it is not observed during the
+      // initial pristine preview. Warm it as well for the first edit.
+      const requests = new Set(
+        ['compiler.js', 'esbuild.wasm', 'api.js'].map((name) => `${playgroundBase}assets/${name}`),
+      )
+      page.context().on('response', (response) => {
+        const url = new URL(response.url())
+        if (response.ok() && url.origin === server.origin && url.pathname.startsWith(playgroundBase)) {
+          // The channel is a random per-activation identifier, not an asset version.
+          url.searchParams.delete('channel')
+          requests.add(url.pathname + url.search)
+        }
+      })
       try {
         await page.goto(`${server.origin}${playgroundBase}${id}/`)
         await page.waitForFunction(() => document.body.dataset.playgroundReady === 'true', undefined, {
@@ -67,10 +81,28 @@ export const prerender = async (directory: string, ids: string[]) => {
           }
           return { html: main.outerHTML, css }
         })
+        await page.waitForLoadState('networkidle')
+        const assets = [...requests].filter((url) => !url.endsWith('/')).sort()
+        const hash = createHash('sha256')
+        for (const asset of assets) {
+          hash.update(asset)
+          hash.update(
+            await readFile(resolve(directory, new URL(asset, server.origin).pathname.slice(playgroundBase.length))),
+          )
+        }
+        await writeFile(
+          resolve(directory, id, 'startup.json'),
+          JSON.stringify({
+            editor: JSON.parse(await readFile(resolve(directory, 'runtime.json'), 'utf8')).entry,
+            revision: hash.digest('hex'),
+            assets,
+          }),
+        )
         const skeleton = prepared.match(/<main[\s\S]*?<\/main>/)?.[0]
         if (!skeleton) throw new Error('Missing playground markup')
         const deferred = prepared
           .replace('<body ', '<body data-playground-state="static" ')
+          .replace('</head>', '<script type="module" src="../assets/playground-preload.js"></script></head>')
           .replace('</head>', `<style data-snapshot-styles>${snapshot.css}</style></head>`)
           .replace(
             skeleton,
