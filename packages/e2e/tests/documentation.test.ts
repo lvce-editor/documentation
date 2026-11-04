@@ -61,6 +61,28 @@ test('homepage routes readers to tasks and remains readable on a phone', async (
   await expect(page.getByRole('button', { name: 'Extension source', exact: true })).toBeVisible()
 })
 
+test('documentation pages omit the outline while keeping navigation and heading links', async ({ page }) => {
+  await page.goto('./use/first-project')
+  await expect(page.getByRole('heading', { name: 'On this page' })).toBeHidden()
+  await expect(page.locator('.outline-link')).toHaveCount(0)
+  await expect(page.locator('.VPSidebar')).toBeVisible()
+  await expect(page.locator('.header-anchor').first()).toBeAttached()
+  await expect(page.getByRole('heading', { name: 'Open your first project' })).toBeVisible()
+
+  await page.getByRole('link', { name: 'Find and replace' }).click()
+  await expect(page).toHaveURL(/\/use\/search$/)
+  await expect(page.getByRole('heading', { name: 'On this page' })).toBeHidden()
+  await expect(page.locator('.outline-link')).toHaveCount(0)
+  await expect(page.getByRole('heading', { name: 'Find and replace' })).toBeVisible()
+
+  await page.setViewportSize({ width: 390, height: 844 })
+  await expect(page.getByRole('heading', { name: 'On this page' })).toBeHidden()
+  await expect(page.locator('.outline-link')).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'On this page' })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Menu' })).toBeVisible()
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+})
+
 test('source and real preview are served without JavaScript', async ({ browser }) => {
   const page = await browser.newPage({ javaScriptEnabled: false })
   try {
