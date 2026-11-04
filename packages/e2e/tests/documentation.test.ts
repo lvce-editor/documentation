@@ -134,6 +134,60 @@ test('first keystrokes survive activation and saving updates the real preview', 
   await expect(example.locator('[data-playground-snapshot] .NotificationMessage')).toHaveText('Hello World!')
 })
 
+test('TypeScript rename supports cancellation, references and saving the preview', async ({ page }) => {
+  const dialogs: string[] = []
+  page.on('dialog', async (dialog) => {
+    dialogs.push(dialog.message())
+    await dialog.dismiss()
+  })
+  await page.goto('./extensions/hello-world')
+  const example = page.frameLocator('iframe')
+  await example.locator('#snapshot-source-ide .EditorRow').first().click()
+  await expect(example.locator('body')).toHaveAttribute('data-playground-state', 'live')
+  const frame = await focusSource(page)
+  const rows = example.locator('#source-ide .EditorRows')
+  const original = await rows.innerText()
+  const openRename = async () => {
+    await focusSource(page)
+    await frame.evaluate(async () => {
+      const { entry } = await fetch(`${document.body.dataset.routePrefix}/runtime.json`).then((response) =>
+        response.json(),
+      )
+      const renderer = await import(entry)
+      const uid = Number(document.querySelector<HTMLElement>('#source-ide .Editor')!.dataset.uid)
+      await renderer.executeCommand(
+        'Application.execute',
+        'source',
+        'Viewlet.executeViewletCommand',
+        uid,
+        'cursorSet',
+        2,
+        7,
+      )
+      await renderer.executeCommand('Application.execute', 'source', 'Viewlet.executeViewletCommand', uid, 'openRename')
+    })
+    const input = example.locator('#source-ide .RenameInputBox')
+    await expect(input).toBeVisible()
+    await expect(input).toHaveValue('main')
+    return input
+  }
+  const cancelled = await openRename()
+  await cancelled.fill('cancelledName')
+  await page.keyboard.press('Escape')
+  await expect(cancelled).toBeHidden()
+  await expect(rows).toHaveText(original)
+  const input = await openRename()
+  await input.fill('runSample')
+  await page.keyboard.press('Enter')
+  await expect(input).toBeHidden()
+  await expect(rows).toHaveText(original.replace('const main =', 'const runSample =').replace('main()', 'runSample()'))
+  await focusSource(page)
+  await page.keyboard.press('ControlOrMeta+s')
+  await expect(example.locator('body')).toHaveAttribute('data-preview-revision', '2')
+  await expect(example.locator('#preview-ide .NotificationMessage').last()).toHaveText('Hello World!')
+  expect(dialogs).toEqual([])
+})
+
 test('first pointer action is replayed, and activating one iframe leaves another idle', async ({ page }) => {
   await page.goto('./extensions/hello-world')
   // A second embedding tests application ownership without a test-only production route.
