@@ -342,10 +342,11 @@ button {
   flex: 1;
   min-height: 0;
 }
-@media (min-width: 1440px) {
+@media (min-width: 1280px) {
   .vp-doc .live-example {
-    margin-left: -20px;
-    margin-right: -20px;
+    width: calc(100% + 80px);
+    margin-left: -40px;
+    margin-right: -40px;
   }
 }
 @media (max-width: 959px) {
