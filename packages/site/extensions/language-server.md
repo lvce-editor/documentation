@@ -11,7 +11,7 @@ Run a small **real LSP server** and display its completion result in LVCE. This 
 Install [LVCE](../use/installation) and make its `lvce` command available on your PATH. You also need Git and the Node version in the samples repository's `.nvmrc`.
 
 ```sh
-git clone https://github.com/lvce-editor/extension-samples.git
+git clone git@github.com:lvce-editor/extension-samples.git
 cd extension-samples
 npm ci
 npm run build --workspace=packages/sample-language-server

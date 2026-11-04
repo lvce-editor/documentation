@@ -3,6 +3,6 @@
   "samples": {
     "repository": "https://github.com/lvce-editor/extension-samples.git",
     "revision": "7dbc269fce0e293767898bf7c96bb65eac6a1034",
-    "ids": ["hello-world", "syntax-highlighting"]
+    "ids": ["hello-world", "sidebar-counter", "syntax-highlighting"]
   }
 }

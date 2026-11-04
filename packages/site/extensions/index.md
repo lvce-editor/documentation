@@ -5,6 +5,7 @@ An LVCE extension can add a command, teach the editor a language, or contribute 
 ## Choose a tutorial
 
 - [Hello World](./hello-world): register a command and show a notification. No installation needed for the live example.
+- [Build a sidebar counter](./sidebar-counter): start with an empty project and add a view, state, and working controls one step at a time.
 - [Syntax highlighting](./syntax-highlighting): associate a file extension with a tokenizer and see its colors update.
 - [Connect a language server](./language-server): run a real LSP server locally and display its hover response.
 
