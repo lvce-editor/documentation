@@ -32,7 +32,7 @@ export const prerender = async (directory: string, ids: string[]) => {
       const sourceEntry = id === 'syntax-highlighting' ? 'src/tokenizeSprout.js' : 'src/main.ts'
       // Sidebar views need the normal playground layout: embedded mode hides
       // the sidebar that hosts the counter. Deferred activation is independent.
-      const embedded = id !== 'sidebar-counter'
+      const embedded = id === 'sidebar-counter' ? 'false' : 'true'
       const prepared = html
         .replace('<body ', `<body data-embedded="${embedded}" data-source-entry="${sourceEntry}" `)
         .replace(
@@ -61,8 +61,7 @@ export const prerender = async (directory: string, ids: string[]) => {
         })
         await page.locator('#source-ide .EditorRow .Token').first().waitFor()
         if (id === 'hello-world') await page.locator('#preview-ide .NotificationMessage').waitFor()
-        else if (id === 'sidebar-counter')
-          await page.locator('#preview-ide .SidebarCounter').getByRole('status').waitFor()
+        else if (id === 'sidebar-counter') await page.locator('#preview-ide .SidebarCounterValue').waitFor()
         else await page.locator('#preview-ide .Token.Keyword').first().waitFor()
         await page.evaluate(() => document.fonts.ready)
         const snapshot = await page.evaluate(() => {

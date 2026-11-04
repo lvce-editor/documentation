@@ -15,6 +15,7 @@ const buildPages = [
   ['Start building', '/extensions/'],
   ['Hello World', '/extensions/hello-world'],
   ['Custom views', '/extensions/custom-view'],
+  ['Build a sidebar counter', '/extensions/sidebar-counter'],
   ['Syntax highlighting', '/extensions/syntax-highlighting'],
   ['Connect a language server', '/extensions/language-server'],
   ['Manifest and activation', '/extensions/manifest'],
@@ -41,7 +42,10 @@ export default defineConfig({
   cleanUrls: true,
   lastUpdated: true,
   srcExclude: ['.generated/**', 'public/**'],
-  head: [['link', { rel: 'icon', href: '/documentation/logo.svg', type: 'image/svg+xml' }]],
+  head: [
+    ['link', { rel: 'icon', href: '/documentation/logo.svg', type: 'image/svg+xml' }],
+    ['meta', { name: 'robots', content: 'noindex' }],
+  ],
   sitemap: { hostname: 'https://lvce-editor.github.io/documentation/' },
   themeConfig: {
     logo: '/logo.svg',

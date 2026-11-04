@@ -107,6 +107,26 @@ test('source and real preview are served without JavaScript', async ({ browser }
   }
 })
 
+test('sidebar counter tutorial links to its runnable checkpoint and explains the click flow', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('./extensions/sidebar-counter')
+  await expect(page.getByRole('heading', { name: 'Build a sidebar counter' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: '1. Create the extension shell' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: '4. Make the count interactive' })).toBeVisible()
+  await expect(page.locator('.guide-diagram svg')).toHaveAttribute('role', 'img')
+  await expect(page.locator('.guide-pulse')).toBeHidden()
+  await expect(page.locator('.guide-diagram figcaption')).toHaveText(
+    'A click updates the instance state; the next render displays the new count.',
+  )
+  const example = page.frameLocator('iframe')
+  await expect(example.locator('[data-playground-snapshot] .SidebarCounterValue')).toContainText('Count: 0')
+  await expect(example.getByRole('button', { name: 'Increment' })).toBeVisible()
+  await page.setViewportSize({ width: 390, height: 844 })
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  await page.getByRole('button', { name: 'Reset', exact: true }).click()
+  await expect(example.locator('body')).toHaveAttribute('data-playground-state', 'static')
+})
+
 test('reading and scrolling multiple examples starts no workers', async ({ page }) => {
   let workers = 0
   page.on('worker', () => workers++)
@@ -119,6 +139,56 @@ test('reading and scrolling multiple examples starts no workers', async ({ page 
   await expect(example.locator('[data-playground-snapshot] .Token.Keyword').first()).toBeVisible()
   await expect(example.locator('body')).toHaveAttribute('data-playground-state', 'static')
   expect(workers).toBe(0)
+})
+
+test('embedded sample tabs cannot be dragged in either pane', async ({ page }) => {
+  for (const sample of ['hello-world', 'syntax-highlighting']) {
+    await page.goto(`./extensions/${sample}`)
+    const example = page.frameLocator('iframe')
+    await expect(example.locator('body')).toHaveAttribute('data-playground-state', 'static')
+    await example.locator('#snapshot-source-ide textarea').focus()
+    await expect(example.locator('body')).toHaveAttribute('data-playground-state', 'live')
+
+    for (const selector of ['#source-ide .MainTab', '#preview-ide .MainTab']) {
+      const tab = example.locator(selector).first()
+      await expect(tab).toBeVisible()
+      const result = await tab.evaluate((element) => {
+        const event = new DragEvent('dragstart', {
+          bubbles: true,
+          cancelable: true,
+          composed: true,
+          dataTransfer: new DataTransfer(),
+        })
+        element.dispatchEvent(event)
+        const dragover = new DragEvent('dragover', {
+          bubbles: true,
+          cancelable: true,
+          composed: true,
+          dataTransfer: new DataTransfer(),
+        })
+        element.dispatchEvent(dragover)
+        const drop = new DragEvent('drop', {
+          bubbles: true,
+          cancelable: true,
+          composed: true,
+          dataTransfer: new DataTransfer(),
+        })
+        element.dispatchEvent(drop)
+        return {
+          dragPrevented: event.defaultPrevented,
+          dragoverPrevented: dragover.defaultPrevented,
+          dropPrevented: drop.defaultPrevented,
+          dropEffect: dragover.dataTransfer?.dropEffect,
+          draggable: (element as HTMLElement).draggable,
+        }
+      })
+      expect(result.dragPrevented).toBe(true)
+      expect(result.dragoverPrevented).toBe(true)
+      expect(result.dropPrevented).toBe(true)
+      expect(result.dropEffect).toBe('none')
+      expect(result.draggable).toBe(false)
+    }
+  }
 })
 
 test('first keystrokes survive activation and saving updates the real preview', async ({ page }) => {
