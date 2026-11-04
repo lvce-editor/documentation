@@ -54,11 +54,22 @@ test.afterEach(async ({ page }, testInfo) => {
 test('homepage routes readers to tasks and remains readable on a phone', async ({ page }) => {
   await page.goto('./')
   await expect(page.getByRole('heading', { name: 'Get to know LVCE Editor.' })).toBeVisible()
+  const blogLink = page.getByRole('link', { name: 'Blog', exact: true })
+  await expect(blogLink).toHaveAttribute('href', 'https://lvce-editor.github.io/blog/')
   await page.getByRole('link', { name: 'Your first extension', exact: false }).click()
   await expect(page.getByRole('heading', { name: /^Your first extension/ })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Blog', exact: true })).toHaveAttribute(
+    'href',
+    'https://lvce-editor.github.io/blog/',
+  )
   await page.setViewportSize({ width: 390, height: 844 })
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   await expect(page.getByRole('button', { name: 'Extension source', exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'mobile navigation' }).click()
+  const mobileBlogLink = page.locator('.VPNavScreenMenu').getByRole('link', { name: 'Blog', exact: true })
+  await expect(mobileBlogLink).toHaveAttribute('href', 'https://lvce-editor.github.io/blog/')
+  await mobileBlogLink.focus()
+  await expect(mobileBlogLink).toBeFocused()
 })
 
 test('source and real preview are served without JavaScript', async ({ browser }) => {
