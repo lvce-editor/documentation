@@ -49,6 +49,7 @@ export default defineConfig({
       { text: 'Use LVCE', link: '/use/', activeMatch: '/use/' },
       { text: 'Build extensions', link: '/extensions/', activeMatch: '/extensions/' },
       { text: 'API', link: '/api/', activeMatch: '/api/' },
+      { text: 'Blog', link: 'https://lvce-editor.github.io/blog/' },
       { text: `v${sources.editor}`, link: '/about/versions' },
     ],
     sidebar: [
