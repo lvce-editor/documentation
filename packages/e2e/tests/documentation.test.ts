@@ -54,11 +54,44 @@ test.afterEach(async ({ page }, testInfo) => {
 test('homepage routes readers to tasks and remains readable on a phone', async ({ page }) => {
   await page.goto('./')
   await expect(page.getByRole('heading', { name: 'Get to know LVCE Editor.' })).toBeVisible()
+  const blogLink = page.getByRole('link', { name: 'Blog', exact: true })
+  await expect(blogLink).toHaveAttribute('href', 'https://lvce-editor.github.io/blog/')
   await page.getByRole('link', { name: 'Your first extension', exact: false }).click()
   await expect(page.getByRole('heading', { name: /^Your first extension/ })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Blog', exact: true })).toHaveAttribute(
+    'href',
+    'https://lvce-editor.github.io/blog/',
+  )
   await page.setViewportSize({ width: 390, height: 844 })
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   await expect(page.getByRole('button', { name: 'Extension source', exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'mobile navigation' }).click()
+  const mobileBlogLink = page.locator('.VPNavScreenMenu').getByRole('link', { name: 'Blog', exact: true })
+  await expect(mobileBlogLink).toHaveAttribute('href', 'https://lvce-editor.github.io/blog/')
+  await mobileBlogLink.focus()
+  await expect(mobileBlogLink).toBeFocused()
+})
+
+test('documentation pages omit the outline while keeping navigation and heading links', async ({ page }) => {
+  await page.goto('./use/first-project')
+  await expect(page.getByRole('heading', { name: 'On this page' })).toBeHidden()
+  await expect(page.locator('.outline-link')).toHaveCount(0)
+  await expect(page.locator('.VPSidebar')).toBeVisible()
+  await expect(page.locator('.header-anchor').first()).toBeAttached()
+  await expect(page.getByRole('heading', { name: 'Open your first project' })).toBeVisible()
+
+  await page.getByRole('link', { name: 'Find and replace' }).click()
+  await expect(page).toHaveURL(/\/use\/search$/)
+  await expect(page.getByRole('heading', { name: 'On this page' })).toBeHidden()
+  await expect(page.locator('.outline-link')).toHaveCount(0)
+  await expect(page.getByRole('heading', { name: 'Find and replace' })).toBeVisible()
+
+  await page.setViewportSize({ width: 390, height: 844 })
+  await expect(page.getByRole('heading', { name: 'On this page' })).toBeHidden()
+  await expect(page.locator('.outline-link')).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'On this page' })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Menu' })).toBeVisible()
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
 })
 
 test('source and real preview are served without JavaScript', async ({ browser }) => {
@@ -187,6 +220,22 @@ test('first pointer action is replayed, and activating one iframe leaves another
   await expect(example.locator('body')).toHaveAttribute('data-playground-state', 'live')
   await expect(example.locator('#preview-ide .NotificationMessage')).toHaveCount(0)
   await expect(page.frameLocator('#second-example').locator('body')).toHaveAttribute('data-playground-state', 'static')
+})
+
+test('the first click on the manifest tab activates and selects its live editor', async ({ page }) => {
+  await page.goto('./extensions/hello-world')
+  const example = page.frameLocator('iframe')
+  await expect(example.locator('body')).toHaveAttribute('data-playground-state', 'static')
+  const manifest = example.locator('[data-playground-snapshot] [data-application="source"] [role="tab"]', {
+    hasText: 'extension.json',
+  })
+  await expect(manifest).toBeVisible()
+  await manifest.click()
+  await expect(example.locator('body')).toHaveAttribute('data-playground-state', 'live')
+  await expect(example.locator('#source-ide [role="tab"]').filter({ hasText: 'extension.json' })).toBeVisible()
+  await expect(example.locator('#source-ide .EditorRows')).toContainText('"name"')
+  await example.locator('#source-ide [role="tab"]').filter({ hasText: 'main.ts' }).click()
+  await expect(example.locator('#source-ide .EditorRows')).toContainText('Hello World!')
 })
 
 test('editing the actual tokenizer changes preview token styles', async ({ page }) => {

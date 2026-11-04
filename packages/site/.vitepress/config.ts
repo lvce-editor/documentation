@@ -49,6 +49,7 @@ export default defineConfig({
       { text: 'Use LVCE', link: '/use/', activeMatch: '/use/' },
       { text: 'Build extensions', link: '/extensions/', activeMatch: '/extensions/' },
       { text: 'API', link: '/api/', activeMatch: '/api/' },
+      { text: 'Blog', link: 'https://lvce-editor.github.io/blog/' },
       { text: `v${sources.editor}`, link: '/about/versions' },
     ],
     sidebar: [
@@ -56,8 +57,9 @@ export default defineConfig({
       { text: 'Build extensions', items: items(buildPages) },
       { text: 'API reference', collapsed: true, items: items(apiPages) },
     ],
+    aside: false,
     search: { provider: 'local' },
-    outline: { level: [2, 3], label: 'On this page' },
+    outline: false,
     editLink: { pattern: 'https://github.com/lvce-editor/documentation/edit/main/packages/site/:path' },
     socialLinks: [{ icon: 'github', link: 'https://github.com/lvce-editor/documentation' }],
     footer: { copyright: 'LVCE Editor' },
