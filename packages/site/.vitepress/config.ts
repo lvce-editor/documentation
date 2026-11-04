@@ -14,6 +14,7 @@ const usePages = [
 const buildPages = [
   ['Start building', '/extensions/'],
   ['Hello World', '/extensions/hello-world'],
+  ['Build a sidebar counter', '/extensions/sidebar-counter'],
   ['Syntax highlighting', '/extensions/syntax-highlighting'],
   ['Connect a language server', '/extensions/language-server'],
   ['Manifest and activation', '/extensions/manifest'],

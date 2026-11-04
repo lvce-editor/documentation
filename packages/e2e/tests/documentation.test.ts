@@ -107,6 +107,26 @@ test('source and real preview are served without JavaScript', async ({ browser }
   }
 })
 
+test('sidebar counter tutorial links to its runnable checkpoint and explains the click flow', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('./extensions/sidebar-counter')
+  await expect(page.getByRole('heading', { name: 'Build a sidebar counter' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: '1. Create the extension shell' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: '4. Make the count interactive' })).toBeVisible()
+  await expect(page.locator('.guide-diagram svg')).toHaveAttribute('role', 'img')
+  await expect(page.locator('.guide-pulse')).toBeHidden()
+  await expect(page.locator('.guide-diagram figcaption')).toHaveText(
+    'A click updates the instance state; the next render displays the new count.',
+  )
+  const example = page.frameLocator('iframe')
+  await expect(example.locator('[data-playground-snapshot] .SidebarCounterValue')).toContainText('Count: 0')
+  await expect(example.getByRole('button', { name: 'Increment' })).toBeVisible()
+  await page.setViewportSize({ width: 390, height: 844 })
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  await page.getByRole('button', { name: 'Reset', exact: true }).click()
+  await expect(example.locator('body')).toHaveAttribute('data-playground-state', 'static')
+})
+
 test('reading and scrolling multiple examples starts no workers', async ({ page }) => {
   let workers = 0
   page.on('worker', () => workers++)
