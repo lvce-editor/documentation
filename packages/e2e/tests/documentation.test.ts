@@ -94,7 +94,9 @@ test('documentation pages omit the outline while keeping navigation and heading 
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
 })
 
-test('playground examples break out from prose on wide screens and stay contained on smaller screens', async ({ page }) => {
+test('playground examples break out from prose on wide screens and stay contained on smaller screens', async ({
+  page,
+}) => {
   await page.goto('./extensions/hello-world')
   const example = page.locator('.live-example').first()
   const prose = page.locator('.vp-doc p').first()
