@@ -50,7 +50,7 @@ npm run build:desktop -- sidebar-counter
 lvce --transient --link ./packages/sample-sidebar-counter ./packages/sample-sidebar-counter
 ```
 
-Open **F1**, search for **Counter**, and open the view in the sidebar. `--link` loads the local extension for this run; `--transient` keeps its extension data separate from your normal editor session. After editing files on disk, rebuild and relaunch the test window to see the changes.
+Select **Counter** in the activity bar to open the view in the sidebar. `--link` loads the local extension for this run; `--transient` keeps its extension data separate from your normal editor session. After editing files on disk, rebuild and relaunch the test window to see the changes.
 
 ## Choose a different placement
 
