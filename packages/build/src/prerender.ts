@@ -30,6 +30,8 @@ export const prerender = async (directory: string, ids: string[]) => {
       const file = resolve(directory, id, 'index.html')
       const html = await readFile(file, 'utf8')
       const sourceEntry = id === 'syntax-highlighting' ? 'src/tokenizeSprout.js' : 'src/main.ts'
+      // Sidebar views need the normal playground layout: embedded mode hides
+      // the sidebar that hosts the counter. Deferred activation is independent.
       const embedded = id === 'sidebar-counter' ? 'false' : 'true'
       const prepared = html
         .replace('<body ', `<body data-embedded="${embedded}" data-source-entry="${sourceEntry}" `)
@@ -111,7 +113,7 @@ export const prerender = async (directory: string, ids: string[]) => {
             `<div data-playground-snapshot>${snapshot.html}</div>${skeleton.replace('<main ', '<main data-playground-live style="visibility:hidden" ')}`,
           )
         await writeFile(file, deferred)
-        console.log(`Prerendered ${id}: source, preview, and syntax styles`)
+        console.log(`Prerendered ${id}: source and preview`)
       } finally {
         await page.close()
       }
