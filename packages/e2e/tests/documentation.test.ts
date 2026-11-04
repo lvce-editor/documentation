@@ -94,6 +94,31 @@ test('documentation pages omit the outline while keeping navigation and heading 
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
 })
 
+test('playground examples break out from prose on wide screens and stay contained on smaller screens', async ({
+  page,
+}) => {
+  await page.goto('./extensions/hello-world')
+  const example = page.locator('.live-example').first()
+  const prose = page.locator('.vp-doc p').first()
+
+  await page.setViewportSize({ width: 1440, height: 900 })
+  const wide = await example.boundingBox()
+  const text = await prose.boundingBox()
+  expect(wide).not.toBeNull()
+  expect(text).not.toBeNull()
+  expect(wide!.width).toBeGreaterThan(text!.width)
+  await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+
+  for (const width of [1024, 390]) {
+    await page.setViewportSize({ width, height: 844 })
+    await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+    const bounds = await example.boundingBox()
+    expect(bounds).not.toBeNull()
+    expect(bounds!.x).toBeGreaterThanOrEqual(0)
+    expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(width)
+  }
+})
+
 test('source and real preview are served without JavaScript', async ({ browser }) => {
   const page = await browser.newPage({ javaScriptEnabled: false })
   try {
