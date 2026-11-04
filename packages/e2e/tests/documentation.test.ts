@@ -140,6 +140,13 @@ test('embedded sample tabs cannot be dragged in either pane', async ({ page }) =
           dataTransfer: new DataTransfer(),
         })
         element.dispatchEvent(event)
+        const dragover = new DragEvent('dragover', {
+          bubbles: true,
+          cancelable: true,
+          composed: true,
+          dataTransfer: new DataTransfer(),
+        })
+        element.dispatchEvent(dragover)
         const drop = new DragEvent('drop', {
           bubbles: true,
           cancelable: true,
@@ -149,13 +156,17 @@ test('embedded sample tabs cannot be dragged in either pane', async ({ page }) =
         element.dispatchEvent(drop)
         return {
           dragPrevented: event.defaultPrevented,
+          dragoverPrevented: dragover.defaultPrevented,
           dropPrevented: drop.defaultPrevented,
+          dropEffect: dragover.dataTransfer?.dropEffect,
           draggable: (element as HTMLElement).draggable,
         }
       })
       expect(result.dragPrevented).toBe(true)
+      expect(result.dragoverPrevented).toBe(true)
       expect(result.dropPrevented).toBe(true)
-      expect(result.draggable).toBe(true)
+      expect(result.dropEffect).toBe('none')
+      expect(result.draggable).toBe(false)
     }
   }
 })
