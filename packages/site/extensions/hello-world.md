@@ -33,7 +33,7 @@ The same command ID appears in `activation`, `commands`, and `registerCommand`. 
 You need Git, the Node version recorded in `extension-samples/.nvmrc`, and npm. To also test in a desktop window, [install LVCE](../use/installation) with the `lvce` command available on your PATH.
 
 ```sh
-git clone https://github.com/lvce-editor/extension-samples.git
+git clone git@github.com:lvce-editor/extension-samples.git
 cd extension-samples
 npm ci
 npm run dev
