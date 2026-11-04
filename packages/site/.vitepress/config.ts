@@ -41,7 +41,10 @@ export default defineConfig({
   cleanUrls: true,
   lastUpdated: true,
   srcExclude: ['.generated/**', 'public/**'],
-  head: [['link', { rel: 'icon', href: '/documentation/logo.svg', type: 'image/svg+xml' }]],
+  head: [
+    ['link', { rel: 'icon', href: '/documentation/logo.svg', type: 'image/svg+xml' }],
+    ['meta', { name: 'robots', content: 'noindex' }],
+  ],
   sitemap: { hostname: 'https://lvce-editor.github.io/documentation/' },
   themeConfig: {
     logo: '/logo.svg',
