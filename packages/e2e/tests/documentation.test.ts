@@ -196,6 +196,29 @@ test('editing the actual tokenizer changes preview token styles', async ({ page 
   await expect(example.locator('#preview-ide .Token.String')).not.toHaveCount(0)
 })
 
+test('custom view tutorial previews an editable sidebar counter', async ({ page }) => {
+  await page.goto('./extensions/custom-view')
+  const example = page.frameLocator('iframe')
+  const counter = example.locator('#preview-ide .SidebarCounter')
+  await expect(example.locator('body')).toHaveAttribute('data-playground-state', 'static')
+  await expect(example.locator('#snapshot-preview-ide .SidebarCounter').getByRole('status')).toHaveText('Count: 0')
+  await expect(example.locator('#snapshot-preview-ide .ActivityBar')).toBeVisible()
+
+  await example.locator('#snapshot-preview-ide .SidebarCounter').getByRole('button', { name: 'Increment' }).click()
+  await expect(counter.getByRole('status')).toHaveText('Count: 1')
+  await counter.getByRole('button', { name: 'Decrement' }).click()
+  await expect(counter.getByRole('status')).toHaveText('Count: 0')
+
+  await replaceMatch(page, 'count += 1', 'count += 2')
+  await page.keyboard.press('ControlOrMeta+s')
+  await expect(example.locator('body')).toHaveAttribute('data-preview-revision', '2')
+  await counter.getByRole('button', { name: 'Increment' }).click()
+  await expect(counter.getByRole('status')).toHaveText('Count: 2')
+  await page.getByRole('button', { name: 'Reset', exact: true }).click()
+  await expect(example.locator('body')).toHaveAttribute('data-playground-state', 'static')
+  await expect(example.locator('#snapshot-preview-ide .SidebarCounter').getByRole('status')).toHaveText('Count: 0')
+})
+
 test('phone tabs show source and preview; local search finds a tutorial', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 })
   await page.goto('./extensions/syntax-highlighting')

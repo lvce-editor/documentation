@@ -30,8 +30,11 @@ export const prerender = async (directory: string, ids: string[]) => {
       const file = resolve(directory, id, 'index.html')
       const html = await readFile(file, 'utf8')
       const sourceEntry = id === 'syntax-highlighting' ? 'src/tokenizeSprout.js' : 'src/main.ts'
+      // Sidebar views need the normal playground layout: embedded mode hides
+      // the sidebar that hosts the counter. Deferred activation is independent.
+      const embedded = id !== 'sidebar-counter'
       const prepared = html
-        .replace('<body ', `<body data-embedded="true" data-source-entry="${sourceEntry}" `)
+        .replace('<body ', `<body data-embedded="${embedded}" data-source-entry="${sourceEntry}" `)
         .replace(
           '</head>',
           `<script src="../assets/playground-theme.js"></script><link rel="stylesheet" href="../assets/palette.css"><link rel="stylesheet" href="../assets/playground.css"><style>${embeddedCss}</style></head>`,
@@ -58,6 +61,8 @@ export const prerender = async (directory: string, ids: string[]) => {
         })
         await page.locator('#source-ide .EditorRow .Token').first().waitFor()
         if (id === 'hello-world') await page.locator('#preview-ide .NotificationMessage').waitFor()
+        else if (id === 'sidebar-counter')
+          await page.locator('#preview-ide .SidebarCounter').getByRole('status').waitFor()
         else await page.locator('#preview-ide .Token.Keyword').first().waitFor()
         await page.evaluate(() => document.fonts.ready)
         const snapshot = await page.evaluate(() => {
@@ -109,7 +114,7 @@ export const prerender = async (directory: string, ids: string[]) => {
             `<div data-playground-snapshot>${snapshot.html}</div>${skeleton.replace('<main ', '<main data-playground-live style="visibility:hidden" ')}`,
           )
         await writeFile(file, deferred)
-        console.log(`Prerendered ${id}: source, preview, and syntax styles`)
+        console.log(`Prerendered ${id}: source and preview`)
       } finally {
         await page.close()
       }

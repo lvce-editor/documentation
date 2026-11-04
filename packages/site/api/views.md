@@ -16,6 +16,8 @@ Use `showQuickPick()` for a choice and `showQuickInput()` for text. Await the re
 
 The samples repository includes sidebar and file-view examples. Start from one with the same placement and interaction model as your feature.
 
+Follow the [custom view tutorial](../extensions/custom-view) to build an interactive sidebar view. For a view associated with a file extension, see the [file-view sample](https://github.com/lvce-editor/extension-samples/tree/main/packages/sample-file-view).
+
 ## Status items and output
 
 A status-item provider returns the text and action for a compact status-bar item. Refresh it when its underlying state changes. Provide an accessible label describing the action or state.
