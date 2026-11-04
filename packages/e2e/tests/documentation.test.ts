@@ -100,9 +100,19 @@ test('embedded sample tabs cannot be dragged in either pane', async ({ page }) =
       const tab = example.locator(selector).first()
       await expect(tab).toBeVisible()
       const result = await tab.evaluate((element) => {
-        const event = new DragEvent('dragstart', { bubbles: true, cancelable: true, dataTransfer: new DataTransfer() })
+        const event = new DragEvent('dragstart', {
+          bubbles: true,
+          cancelable: true,
+          composed: true,
+          dataTransfer: new DataTransfer(),
+        })
         element.dispatchEvent(event)
-        const drop = new DragEvent('drop', { bubbles: true, cancelable: true, dataTransfer: new DataTransfer() })
+        const drop = new DragEvent('drop', {
+          bubbles: true,
+          cancelable: true,
+          composed: true,
+          dataTransfer: new DataTransfer(),
+        })
         element.dispatchEvent(drop)
         return {
           dragPrevented: event.defaultPrevented,
