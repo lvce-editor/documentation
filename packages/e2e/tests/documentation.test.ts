@@ -141,6 +141,56 @@ test('reading and scrolling multiple examples starts no workers', async ({ page 
   expect(workers).toBe(0)
 })
 
+test('embedded sample tabs cannot be dragged in either pane', async ({ page }) => {
+  for (const sample of ['hello-world', 'syntax-highlighting']) {
+    await page.goto(`./extensions/${sample}`)
+    const example = page.frameLocator('iframe')
+    await expect(example.locator('body')).toHaveAttribute('data-playground-state', 'static')
+    await example.locator('#snapshot-source-ide textarea').focus()
+    await expect(example.locator('body')).toHaveAttribute('data-playground-state', 'live')
+
+    for (const selector of ['#source-ide .MainTab', '#preview-ide .MainTab']) {
+      const tab = example.locator(selector).first()
+      await expect(tab).toBeVisible()
+      const result = await tab.evaluate((element) => {
+        const event = new DragEvent('dragstart', {
+          bubbles: true,
+          cancelable: true,
+          composed: true,
+          dataTransfer: new DataTransfer(),
+        })
+        element.dispatchEvent(event)
+        const dragover = new DragEvent('dragover', {
+          bubbles: true,
+          cancelable: true,
+          composed: true,
+          dataTransfer: new DataTransfer(),
+        })
+        element.dispatchEvent(dragover)
+        const drop = new DragEvent('drop', {
+          bubbles: true,
+          cancelable: true,
+          composed: true,
+          dataTransfer: new DataTransfer(),
+        })
+        element.dispatchEvent(drop)
+        return {
+          dragPrevented: event.defaultPrevented,
+          dragoverPrevented: dragover.defaultPrevented,
+          dropPrevented: drop.defaultPrevented,
+          dropEffect: dragover.dataTransfer?.dropEffect,
+          draggable: (element as HTMLElement).draggable,
+        }
+      })
+      expect(result.dragPrevented).toBe(true)
+      expect(result.dragoverPrevented).toBe(true)
+      expect(result.dropPrevented).toBe(true)
+      expect(result.dropEffect).toBe('none')
+      expect(result.draggable).toBe(false)
+    }
+  }
+})
+
 test('first keystrokes survive activation and saving updates the real preview', async ({ page }) => {
   let releaseRuntime: (() => void) | undefined
   const released = new Promise<void>((resolve) => {

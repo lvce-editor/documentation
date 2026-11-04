@@ -2,7 +2,7 @@
   "editor": "0.127.6",
   "samples": {
     "repository": "https://github.com/lvce-editor/extension-samples.git",
-    "revision": "7dbc269fce0e293767898bf7c96bb65eac6a1034",
+    "revision": "53267553265ed4264331cd1fa3e1fd0059f9ad6a",
     "ids": ["hello-world", "sidebar-counter", "syntax-highlighting"]
   }
 }
