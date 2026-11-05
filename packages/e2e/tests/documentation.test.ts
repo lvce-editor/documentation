@@ -263,6 +263,8 @@ test('first keystrokes survive activation and saving updates the real preview', 
 })
 
 test('TypeScript rename supports cancellation, references and saving the preview', async ({ page }) => {
+  // Three TS7 requests plus preview rebuilding took 58s; keep per-action waits unchanged.
+  test.setTimeout(90_000)
   const dialogs: string[] = []
   page.on('dialog', async (dialog) => {
     dialogs.push(dialog.message())
