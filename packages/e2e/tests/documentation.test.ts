@@ -273,8 +273,9 @@ test('TypeScript rename supports cancellation, references and saving the preview
   await example.locator('#snapshot-source-ide .EditorRow').first().click()
   await expect(example.locator('body')).toHaveAttribute('data-playground-state', 'live')
   const frame = await focusSource(page)
-  const rows = example.locator('#source-ide .EditorRows')
-  const original = await rows.innerText()
+  const rows = example.locator('#source-ide .EditorRows .EditorRow')
+  await expect(rows.first()).toBeVisible()
+  const original = await rows.allTextContents()
   const openRename = async () => {
     await focusSource(page)
     await frame.evaluate(async () => {
@@ -308,7 +309,9 @@ test('TypeScript rename supports cancellation, references and saving the preview
   await input.fill('runSample')
   await page.keyboard.press('Enter')
   await expect(input).toBeHidden()
-  await expect(rows).toHaveText(original.replace('const main =', 'const runSample =').replace('main()', 'runSample()'))
+  await expect(rows).toHaveText(
+    original.map((line) => line.replace('const main =', 'const runSample =').replace('main()', 'runSample()')),
+  )
   await focusSource(page)
   await page.keyboard.press('ControlOrMeta+s')
   await expect(example.locator('body')).toHaveAttribute('data-preview-revision', '2')
